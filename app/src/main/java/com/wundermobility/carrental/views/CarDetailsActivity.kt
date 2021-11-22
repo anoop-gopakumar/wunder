@@ -14,6 +14,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.wundermobility.carrental.R
 import com.wundermobility.carrental.databinding.ActivityCarDetailsBinding
 import com.wundermobility.carrental.models.CarInfo
+import com.wundermobility.carrental.utils.DataUtils
 import com.wundermobility.carrental.utils.ImageUtils
 import com.wundermobility.carrental.viewmodels.DetailsViewModel
 import com.wundermobility.carrental.views.adapter.DetailsInfoAdapter
@@ -64,17 +65,17 @@ class CarDetailsActivity : AppCompatActivity() {
 
         viewModels.carDetailsLiveData.observe(this, Observer {
 
-            if (it != null) {
-                showUI(it)
+            if (it?.body() != null) {
+                showUI(it.body()!!)
             } else {
                 Snackbar.make(
                     binding.root,
                     " The selected vehicle is not available at the moment please select another one ",
                     Snackbar.LENGTH_LONG
                 ).show()
-                Handler(Looper.getMainLooper()).postDelayed( {
+                Handler(Looper.getMainLooper()).postDelayed({
                     finish()
-                },2000)
+                }, 2000)
             }
 
         })
@@ -83,13 +84,13 @@ class CarDetailsActivity : AppCompatActivity() {
 
             binding.progress.visibility = View.GONE
             binding.quickRent.isEnabled = false
-            if (it != null) {
+            if (it.body() != null) {
                 Snackbar.make(
                     binding.root,
                     " The vehicle has successfully booked ",
                     Snackbar.LENGTH_LONG
                 ).show()
-            }else{
+            } else {
                 Snackbar.make(
                     binding.root,
                     " unable to book the vehicle ",
@@ -100,24 +101,15 @@ class CarDetailsActivity : AppCompatActivity() {
         })
     }
 
-
     private fun showUI(carInfo: CarInfo) {
 
         ImageUtils.loadImage(baseContext, carInfo.vehicleTypeImageUrl, binding.imageView)
 
-        val data = ArrayList<Pair<String, String>>()
-
-        data.add(Pair("Name", carInfo.title))
-        data.add(Pair("Licence", carInfo.licencePlate))
-        data.add(Pair("Address", carInfo.address))
-        data.add(Pair("Zipcode", carInfo.zipCode))
-        data.add(Pair("Reservation State", carInfo.reservationState.toString()))
-        data.add(Pair("Fuel Level", carInfo.fuelLevel.toString()))
-
-        val adapter = DetailsInfoAdapter(data)
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.layoutManager =
-            LinearLayoutManager(baseContext, LinearLayoutManager.VERTICAL, false)
+        binding.recyclerView.adapter = DetailsInfoAdapter(DataUtils.convertToData(carInfo))
+        binding.recyclerView.layoutManager = LinearLayoutManager(
+            baseContext,
+            LinearLayoutManager.VERTICAL, false
+        )
 
     }
 
